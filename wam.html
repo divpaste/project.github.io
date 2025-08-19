@@ -2,13 +2,14 @@
 <head>
     <title>Document</title>
     <link rel="stylesheet" href="wam.css">
-    <script src="wam.js"></script>
 </head>
 <body>
     <div id="game-area">
     <div id="left">
-        <h1>Counter:<a id="counter">0</a></h1>
-        <button id="create" type="button" onclick="randomizeMatrix()">Hello</button>
+        <h1>SCORE:</h1>
+        <h1>Hits:<a id="hits-counter">0</a></h1>
+        <h1>Miss:<a id="miss-counter">0</a></h1>
+        <button id="create" type="button" onclick="startGame()">Start</button>
     </div>
     <div id=right>
     <table id="grid-container">
@@ -30,5 +31,6 @@
             </table>
     </div>
     </div>
+    <script src="wam.js"></script>
 </body>
 </html>
