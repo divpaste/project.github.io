@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Card Game</title>
+<style>
+    body 
+    {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex; 
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #89f7fe, #66a6ff);
+    }
+
+    .container 
+    {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        animation: fadeIn 1s ease-in;
+    }
+
+    h1 
+    {
+        margin-bottom: 15px;
+        font-size: 2rem;
+        color: #333;
+        letter-spacing: 1px;
+    }
+
+    #game-board 
+    {
+        display: grid;
+        grid-template-columns: repeat(4, 100px);
+        grid-gap: 12px;
+        justify-content: center;
+        margin: 20px auto;
+    }
+
+    .card 
+    {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(145deg, #444, #222);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        cursor: pointer;
+        border-radius: 15px;
+        transition: transform 0.3s, background 0.3s;
+        user-select: none;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .card:hover 
+    {
+        transform: scale(1.05);
+    }
+
+    .card.flipped 
+    {
+        background: linear-gradient(145deg, #42a5f5, #1e88e5);  
+        transform: rotateY(180deg);
+    }
+
+    .card.matched 
+    {
+        background: linear-gradient(145deg, #66bb6a, #43a047);
+        cursor: default;
+        transform: scale(0.95);
+        opacity: 0.9;
+    }
+
+    #status 
+    {
+        margin-top: 15px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #444;
+    }
+
+    #winner 
+    {
+        margin-top: 20px;
+        font-size: 1.6rem;
+        color: #e91e63;
+        font-weight: bold;
+        display: none; 
+        animation: popIn 0.8s ease;
+    }
+
+    #restart-btn 
+    {
+        margin-top: 15px;
+        padding: 10px 25px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #42a5f5, #1e88e5);
+        color: white;
+        cursor: pointer;
+        display: none; 
+        transition: transform 0.2s, background 0.3s;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+    }
+
+    #restart-btn:hover 
+    {
+        background: linear-gradient(145deg, #1e88e5, #1565c0);
+        transform: scale(1.05);
+    }
+
+    @keyframes fadeIn 
+    {
+        from {opacity: 0; transform: translateY(-20px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+
+    @keyframes popIn 
+    {
+        0% { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+</style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Memory Card Game</h1>
+        <div id="game-board"></div>
+        <p id="status">Attempts: 0</p>
+        <p id="winner">🎉 You Won!!! 🎉</p>
+        <button id="restart-btn">Play Again</button>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById("game-board");
+        const statusText = document.getElementById("status");
+        const winnerText = document.getElementById("winner");
+        const restartBtn = document.getElementById("restart-btn");
+
+        const symbols = ["🍎","🍌","🍇","🍒","🍉","🍋","🍑","🍍"];
+        let cards = [...symbols, ...symbols];  // duplicate the pairs
+        let flipped = [];
+        let attempts = 0;
+
+        // to shuffle cards
+        function shuffle(array) 
+        {
+            for (let i = array.length - 1; i > 0; i--) 
+            {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];  //swap
+            }
+        }
+
+        function setupGame() 
+        {
+            gameBoard.innerHTML = "";
+            flipped = [];
+            attempts = 0;
+            statusText.innerText = "Attempts: 0";
+            winnerText.style.display = "none";
+            restartBtn.style.display = "none";
+
+            cards = [...symbols, ...symbols];
+            shuffle(cards);
+
+            // Create cards
+            cards.forEach(symbol => 
+            {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.dataset.symbol = symbol;
+                card.onclick = () => flipCard(card);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        //flips the cards and matches thyem
+        function flipCard(card) 
+        {
+            //alow the user to flip only 2 cards
+            if (flipped.length === 2 || card.classList.contains("flipped") || card.classList.contains("matched")) return;
+
+            card.classList.add("flipped");
+            card.innerText = card.dataset.symbol;
+            flipped.push(card);
+
+            //it checkes when 2 cards are flipped
+            if (flipped.length === 2) 
+            {
+                attempts++;
+                statusText.innerText = "Attempts: " + attempts;
+                checkMatch();
+            }
+        }
+
+        //to check is the selected cards are matched or not
+        function checkMatch() 
+        {
+            const [c1, c2] = flipped;  //contains the 2 cards that are flipped
+
+            if (c1.dataset.symbol === c2.dataset.symbol) //checks
+            {
+                // Match found
+                c1.classList.add("matched");
+                c2.classList.add("matched");
+                flipped = [];
+
+                //checks if the game is over
+                if (document.querySelectorAll(".matched").length === cards.length) 
+                {
+                    winnerText.innerText = `🎉 You won in ${attempts} attempts!!! 🎉`;
+                    winnerText.style.display = "block";
+                    restartBtn.style.display = "inline-block";
+                }
+            }
+            else
+            {
+                // if no match found flip back
+                setTimeout(() => 
+                {
+                    flipped.forEach(c => 
+                    {
+                        c.classList.remove("flipped");
+                        c.innerText = "";
+                    });
+                    flipped = [];
+                }, 800);
+            }
+        }
+
+        restartBtn.onclick = setupGame;
+        setupGame();
+    </script>
+</body>
+</html>
