@@ -275,8 +275,10 @@
                 console.log("Error: " + error);
             });
 
-        while (!gameOver) {
             document.addEventListener('keydown', (e) => {
+                if(gameOver){
+                    return;
+                }
                 // console.log(e);
                 if (/^[a-z]$/i.test(e.key)) {
                     if (count < 5 && row < 6) {
@@ -348,6 +350,9 @@
             });
 
             keyboard.querySelectorAll("td").forEach(key => {
+                                if(gameOver){
+                    return;
+                }
                 key.addEventListener("click", () => {
                     if (key.innerText === "Enter") {
                         if (count === 5 && row <= 5) {
@@ -394,8 +399,6 @@
                     }
                 });
             });
-        }
-
     });
 </script>
 
