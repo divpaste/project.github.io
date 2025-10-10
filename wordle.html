@@ -12,7 +12,7 @@
         body {
             display: flex;
             flex-direction: column;
-            margin-top: 80px;
+            margin-top: 25px;
             gap: 25px;
             align-items: center;
             /* background-color: #000; */
@@ -37,12 +37,14 @@
         }
 
         #canvas td {
-            border: 2px solid black;
+            background-color: #ffff;
+            border: 2px solid rgb(211, 214, 218);
             height: 45px;
             width: 45px;
-            font-size: 25px;
+            font-size: 40px;
             text-align: center;
-            font-family: monospace;
+            font-family: 'Franklin Gothic Medium';
+            font-weight: bold;
             vertical-align: middle;
             line-height: 35px;
         }
@@ -92,7 +94,6 @@
         }
 
         .appear {
-            background-color: #eee;
             animation: up 0.25s;
         }
 
@@ -128,18 +129,24 @@
         }
 
         .correct-index {
-            background-color: lightgreen !important;
+            background-color: #6ca965 !important;
             animation: flipp 1s ease;
+            border: none !important;
+            color: white;
         }
 
         .wrong-index {
-            background-color: lightgoldenrodyellow !important;
+            background-color: #c8b653 !important;
             animation: flipp 1s ease;
+            border: none !important;
+            color: white;
         }
 
         .wrong-letter {
-            background-color: lightblue !important;
+            background-color: #787c7f !important;
             animation: flipp 1s ease;
+            border: none !important;
+            color: white;
         }
 
         @keyframes flipp {
@@ -254,105 +261,141 @@
         const keyboard = document.getElementById("keyboard");
         const enterKey = document.getElementById("enter");
         const resetKey = document.getElementById("reset");
-        const word = ["W", "A", "T", "E", "R"];
-        document.addEventListener('keydown', (e) => {
-            // console.log(e);
-            if (/^[a-z]$/i.test(e.key)) {
-                if (count < 5 && row < 6) {
-                    const cell = table.rows[row].cells[count];
-                    cell.innerText = e.key.toUpperCase();
-                    cell.classList.add("appear");
-                    cell.classList.add("active");
-                    setTimeout(() => cell.classList.remove("appear"), 500);
-                    count++;
-                    keyboard.querySelectorAll("td").forEach(td => {
-                        if (td.innerText === e.key.toUpperCase()) {
-                            td.classList.add("pressed");
-                            setTimeout(() => td.classList.remove("pressed"), 400);
-                        }
-                    });
-                }
-            }
-            else if (e.key === "Backspace") {
-                if (count > 0) {
-                    count--;
-                    const cell = table.rows[row].cells[count];
-                    cell.innerText = "";
-                    cell.classList.remove("active");
-                    resetKey.classList.add("pressed");
-                    setTimeout(() => resetKey.classList.remove("pressed"), 300);
+        let word = [];
+        let status = [0, 0, 0, 0, 0];
+        let gameOver = false;
 
-                }
-            }
-            else if (e.key === "Enter") {
-                if (count === 5 && row < 5) {
-                    for (let i = 0; i < 5; i++) {
-                        cell = table.rows[row].cells[i];
-                        if (cell.innerText === word[i]) {
-                            cell.classList.add("correct-index");
-                        }
-                        else if (word.includes(cell.innerText)) {
-                            cell.classList.add("wrong-index");
-                        }
-                        else {
-                            cell.classList.add("wrong-letter");
-                        }
-                    }
-                    row++;
-                    count = 0;
-                    enterKey.classList.add("pressed");
-                    setTimeout(() => enterKey.classList.remove("pressed"), 300);
-                }
-            }
-        });
+        fetch('words.json')
+            .then(response => response.json())
+            .then(data => {
+                word = data[Math.floor(Math.random() * data.length)].toUpperCase();
+                console.log("Selected word:", word);
+            })
+            .catch(error => {
+                console.log("Error: " + error);
+            });
 
-        keyboard.querySelectorAll("td").forEach(key => {
-            key.addEventListener("click", () => {
-                if (key.innerText === "Enter") {
-                    if (count === 5 && row < 5) {
-                        for (let i = 0; i < 5; i++) {
-                            let cell = table.rows[row].cells[i];
-                            setTimeout(() => {
-                                if (cell.innerText === word[i]) {
-                                    cell.classList.add("correct-index");
-                                } else if (word.includes(cell.innerText)) {
-                                    cell.classList.add("wrong-index");
-                                } else {
-                                    cell.classList.add("wrong-letter");
-                                }
-                            }, i * 500);
-                        }
-                        setTimeout(() => {
-                            row++;
-                            count = 0;
-                        }, 5 * 300 + 300);
+        while (!gameOver) {
+            document.addEventListener('keydown', (e) => {
+                // console.log(e);
+                if (/^[a-z]$/i.test(e.key)) {
+                    if (count < 5 && row < 6) {
+                        const cell = table.rows[row].cells[count];
+                        cell.innerText = e.key.toUpperCase();
+                        cell.classList.add("appear");
+                        cell.classList.add("active");
+                        setTimeout(() => cell.classList.remove("appear"), 500);
+                        count++;
+                        keyboard.querySelectorAll("td").forEach(td => {
+                            if (td.innerText === e.key.toUpperCase()) {
+                                td.classList.add("pressed");
+                                setTimeout(() => td.classList.remove("pressed"), 400);
+                            }
+                        });
                     }
                 }
-                else if (key.innerText === "Reset") {
+                else if (e.key === "Backspace") {
                     if (count > 0) {
                         count--;
                         const cell = table.rows[row].cells[count];
                         cell.innerText = "";
                         cell.classList.remove("active");
-                        key.classList.add("pressed");
-                        setTimeout(() => key.classList.remove("pressed"), 300);
-                    }
-                }
-                else if (/^[a-z]$/i.test(key.innerText)) {
-                    if (count < 5 && row < 6) {
-                        const cell = table.rows[row].cells[count];
-                        cell.innerText = key.innerText;
-                        cell.classList.add("appear");
-                        cell.classList.add("active");
-                        setTimeout(() => cell.classList.remove("appear"), 500);
-                        count++;
+                        resetKey.classList.add("pressed");
+                        setTimeout(() => resetKey.classList.remove("pressed"), 300);
 
-                        key.classList.add("pressed");
-                        setTimeout(() => key.classList.remove("pressed"), 400);
                     }
                 }
+                else if (e.key === "Enter") {
+                    if (count === 5 && row <= 5) {
+                        let wordCopy = word.split("");
+
+                        for (let i = 0; i < 5; i++) {
+                            let cell = table.rows[row].cells[i];
+                            if (cell.innerText === word[i]) {
+                                cell.classList.add("correct-index");
+                                wordCopy[i] = null;
+                                status[i] = 1;
+                            }
+                        }
+
+                        for (let i = 0; i < 5; i++) {
+                            let cell = table.rows[row].cells[i];
+                            if (cell.innerText !== word[i] && wordCopy.includes(cell.innerText)) {
+                                cell.classList.add("wrong-index");
+                                wordCopy[wordCopy.indexOf(cell.innerText)] = null;
+                            }
+                        }
+
+                        for (let i = 0; i < 5; i++) {
+                            let cell = table.rows[row].cells[i];
+                            if (!cell.classList.contains("correct-index") && !cell.classList.contains("wrong-index")) {
+                                cell.classList.add("wrong-letter");
+                            }
+                        }
+
+                        if (status.every(i => i === 1)) {
+                            setTimeout(() => alert("You Won!"));
+                            gameWon = true;
+                        }
+
+                        row++;
+                        count = 0;
+                        enterKey.classList.add("pressed");
+                        setTimeout(() => enterKey.classList.remove("pressed"), 300);
+                    }
+                }
+
             });
-        });
+
+            keyboard.querySelectorAll("td").forEach(key => {
+                key.addEventListener("click", () => {
+                    if (key.innerText === "Enter") {
+                        if (count === 5 && row <= 5) {
+                            for (let i = 0; i < 5; i++) {
+                                let cell = table.rows[row].cells[i];
+                                setTimeout(() => {
+                                    if (cell.innerText === word[i]) {
+                                        cell.classList.add("correct-index");
+                                    } else if (word.includes(cell.innerText)) {
+                                        cell.classList.add("wrong-index");
+                                    } else {
+                                        cell.classList.add("wrong-letter");
+                                    }
+                                }, i * 500);
+                            }
+                            setTimeout(() => {
+                                row++;
+                                count = 0;
+                            }, 5 * 300 + 300);
+                        }
+                    }
+                    else if (key.innerText === "Reset") {
+                        if (count > 0) {
+                            count--;
+                            const cell = table.rows[row].cells[count];
+                            cell.innerText = "";
+                            cell.classList.remove("active");
+                            key.classList.add("pressed");
+                            setTimeout(() => key.classList.remove("pressed"), 300);
+                        }
+                    }
+                    else if (/^[a-z]$/i.test(key.innerText)) {
+                        if (count < 5 && row < 6) {
+                            const cell = table.rows[row].cells[count];
+                            cell.innerText = key.innerText;
+                            cell.classList.add("appear");
+                            cell.classList.add("active");
+                            setTimeout(() => cell.classList.remove("appear"), 500);
+                            count++;
+
+                            key.classList.add("pressed");
+                            setTimeout(() => key.classList.remove("pressed"), 400);
+                        }
+                    }
+                });
+            });
+        }
+
     });
 </script>
 
